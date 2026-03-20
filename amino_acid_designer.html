@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:transparent;color:var(--color-text-primary);font-size:13px}
+.app{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.tab{padding:10px 20px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary);transition:all .15s;user-select:none}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);background:var(--color-background-primary)}
+.panel{display:none}.panel.active{display:flex}
+
+.sidebar{width:270px;min-width:270px;background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;max-height:680px}
+.main{flex:1;background:var(--color-background-primary);display:flex;flex-direction:column;min-width:0}
+
+.sec-label{font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.chip-grid{display:flex;flex-wrap:wrap;gap:4px}
+.chip{padding:3px 9px;border-radius:20px;font-size:11px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .12s;user-select:none}
+.chip:hover{border-color:var(--color-border-primary);color:var(--color-text-primary)}
+.chip.active{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+.chip.cat-alkyl.active{background:#F1EFE8;color:#444441;border-color:#888780}
+.chip.cat-aromatic.active{background:#E1F5EE;color:#085041;border-color:#1D9E75}
+.chip.cat-reactive.active{background:#E6F1FB;color:#0C447C;border-color:#378ADD}
+.chip.cat-fluoro.active{background:#FAEEDA;color:#633806;border-color:#BA7517}
+.chip.cat-polar.active{background:#FAECE7;color:#712B13;border-color:#D85A30}
+.chip.cat-charged.active{background:#FBEAF0;color:#72243E;border-color:#D4537E}
+.chip.cat-cyclic.active{background:#EEEDFE;color:#3C3489;border-color:#7F77DD}
+.chip.cat-special.active{background:#EAF3DE;color:#27500A;border-color:#639922}
+
+.name-row{padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aa-name{font-size:16px;font-weight:500}
+.aa-abbr{font-size:12px;color:var(--color-text-secondary)}
+.badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500}
+.bg-gray{background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary)}
+.bg-blue{background:#E6F1FB;color:#0C447C}
+.bg-green{background:#EAF3DE;color:#27500A}
+.bg-amber{background:#FAEEDA;color:#633806}
+.bg-red{background:#FCEBEB;color:#791F1F}
+.bg-pink{background:#FBEAF0;color:#72243E}
+.bg-purple{background:#EEEDFE;color:#3C3489}
+.bg-teal{background:#E1F5EE;color:#085041}
+.bg-coral{background:#FAECE7;color:#712B13}
+
+.canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:14px;min-height:240px}
+.prop-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:12px}
+.prop-label{color:var(--color-text-secondary)}
+.info-strip{padding:8px 14px;border-top:0.5px solid var(--color-border-tertiary);display:flex;gap:12px;flex-wrap:wrap}
+.stat{flex:1;min-width:60px}
+.stat-num{font-size:18px;font-weight:500;line-height:1}
+.stat-lbl{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
+.use-card{padding:8px 14px;background:var(--color-background-secondary);border-top:0.5px solid var(--color-border-tertiary);font-size:11px;color:var(--color-text-secondary);line-height:1.6}
+.ask-btn{margin-top:6px;margin-right:5px;padding:4px 9px;font-size:11px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+.ask-btn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+hr.div{border:none;border-top:0.5px solid var(--color-border-tertiary)}
+.bb-row{display:flex;gap:4px}
+.bb-btn{flex:1;padding:5px 2px;text-align:center;font-size:11px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .12s}
+.bb-btn:hover{border-color:var(--color-border-primary)}
+.bb-btn.active{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+
+.seq-panel{flex-direction:column;padding:0}
+.seq-top{display:flex;gap:0;flex:1;min-height:500px}
+.seq-lib{width:240px;min-width:240px;background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:12px;overflow-y:auto;max-height:600px}
+.seq-main{flex:1;display:flex;flex-direction:column;padding:14px;gap:12px;min-width:0}
+.seq-strip{display:flex;flex-wrap:wrap;gap:6px;min-height:56px;padding:8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);align-items:center;background:var(--color-background-secondary)}
+.res-tile{display:flex;flex-direction:column;align-items:center;padding:6px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;transition:all .12s;user-select:none;min-width:44px}
+.res-tile:hover{border-color:var(--color-border-primary)}
+.res-tile.selected-tile{border:1.5px solid var(--color-border-info);background:var(--color-background-info)}
+.res-abbr{font-size:12px;font-weight:500}
+.res-name{font-size:9px;color:var(--color-text-tertiary);margin-top:1px;text-align:center;max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seq-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.seq-btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.seq-btn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.seq-btn.primary{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+.props-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.prop-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px}
+.prop-num{font-size:18px;font-weight:500}
+.prop-lbl{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
+.seq-vis{overflow-x:auto;padding:4px 0}
+.chain-svg-wrap{min-width:100%}
+.nn-indicator{font-size:9px;padding:1px 5px;border-radius:8px;margin-top:2px;font-weight:500}
+.empty-hint{font-size:12px;color:var(--color-text-tertiary);padding:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('designer')">Amino acid designer</div>
+    <div class="tab" onclick="switchTab('builder')">Peptide sequence builder</div>
+  </div>
+
+  <div class="panel active" id="panel-designer" style="display:flex">
+    <div class="sidebar">
+      <div>
+        <div class="sec-label">Backbone</div>
+        <div class="bb-row">
+          <div class="bb-btn active" onclick="setBackbone(this,'alpha')">α-L</div>
+          <div class="bb-btn" onclick="setBackbone(this,'beta')">β-amino</div>
+          <div class="bb-btn" onclick="setBackbone(this,'d')">α-D</div>
+          <div class="bb-btn" onclick="setBackbone(this,'n-me')">N-Me</div>
+        </div>
+      </div>
+      <hr class="div">
+      <div>
+        <div class="sec-label">Category</div>
+        <div class="chip-grid" id="cat-chips"></div>
+      </div>
+      <div>
+        <div class="sec-label">Side chain</div>
+        <div class="chip-grid" id="sc-chips"></div>
+      </div>
+      <hr class="div">
+      <div>
+        <div class="sec-label">Properties</div>
+        <div id="props-list"></div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="name-row">
+        <div class="aa-name" id="d-name">Homoalanine</div>
+        <div class="aa-abbr" id="d-abbr">hAla · α-L</div>
+        <span class="badge bg-gray" id="d-badge">Non-natural</span>
+        <button class="ask-btn" onclick="sendPrompt('How is '+document.getElementById('d-name').textContent+' synthesized chemically?')">Synthesis ↗</button>
+      </div>
+      <div class="canvas-wrap">
+        <svg id="mol-svg" width="100%" viewBox="0 0 460 260" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="info-strip" id="d-info"></div>
+      <div class="use-card" id="d-use"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-builder">
+    <div class="seq-panel" style="display:flex;flex-direction:column;width:100%">
+      <div class="seq-top">
+        <div class="seq-lib">
+          <div class="sec-label" style="margin-bottom:8px">Residue library</div>
+          <div id="lib-tiles"></div>
+        </div>
+        <div class="seq-main">
+          <div>
+            <div class="sec-label" style="margin-bottom:6px">Sequence <span id="seq-len" style="color:var(--color-text-tertiary);font-size:10px;font-weight:400">(0 residues)</span></div>
+            <div class="seq-strip" id="seq-strip">
+              <span class="empty-hint">Click residues from the library to add them</span>
+            </div>
+          </div>
+          <div class="seq-actions">
+            <button class="seq-btn" onclick="undoLast()">Remove last</button>
+            <button class="seq-btn" onclick="clearSeq()">Clear</button>
+            <button class="seq-btn primary" onclick="analyzeSeq()">Analyze ↗</button>
+            <button class="seq-btn" onclick="exportSeq()">Copy sequence</button>
+          </div>
+          <div class="props-grid" id="seq-props"></div>
+          <div>
+            <div class="sec-label" style="margin-bottom:6px">Chain visualization</div>
+            <div class="seq-vis"><div class="chain-svg-wrap"><svg id="chain-svg" width="100%" viewBox="0 0 600 110" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
+          </div>
+          <div id="seq-notes" style="font-size:11px;color:var(--color-text-secondary);line-height:1.6;padding:4px 0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const AA = [
+  {id:'methyl',name:'Methyl',abbr:'hGly',cat:'alkyl',formula:'–CH₃',mw:31,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'gray',usage:'Simplest non-natural extension. Probes steric tolerance at the alpha position.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-52,lb:'CH₃',b:true}])},
+  {id:'ethyl',name:'Ethyl',abbr:'hAla',cat:'alkyl',formula:'–CH₂CH₃',mw:45,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'gray',usage:'Homoalanine. One-carbon extension beyond alanine. Used in metabolic probe studies and enzyme SAR.',draw:(s,x,y)=>dc(s,x,y,[{dx:18,dy:-38},{dx:0,dy:-40,lb:'CH₂CH₃',b:true}])},
+  {id:'propyl',name:'n-Propyl',abbr:'nVal',cat:'alkyl',formula:'–(CH₂)₂CH₃',mw:57,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'gray',usage:'Norvaline analog. Tests hydrophobic pocket volume in enzyme engineering.',draw:(s,x,y)=>dc(s,x,y,[{dx:18,dy:-36},{dx:0,dy:-38,lb:'CH₂'},{dx:-18,dy:-36,lb:'CH₂CH₃',b:true}])},
+  {id:'hexyl',name:'n-Hexyl',abbr:'nLeu2',cat:'alkyl',formula:'–(CH₂)₅CH₃',mw:99,hydrophob:'very high',charge:'neutral',pka:null,natural:false,color:'gray',usage:'Long hydrophobic tail. Used in lipopeptide design for membrane anchoring and antimicrobial activity.',draw:(s,x,y)=>dc(s,x,y,[{dx:14,dy:-30},{dx:-14,dy:-30},{dx:14,dy:-30},{dx:-14,dy:-30,lb:'(CH₂)₅CH₃',b:true}])},
+  {id:'cycloprop',name:'Cyclopropylmethyl',abbr:'cPrAla',cat:'cyclic',formula:'–CH₂–cPr',mw:69,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'purple',usage:'Rigid cyclopropyl constrains χ1 torsion angle, reducing conformational entropy and improving binding affinity.',draw:(s,x,y)=>{ln(s,x,y,x,y-42);tx(s,x,y-48,'CH₂');cPropyl(s,x,y-68)}},
+  {id:'cyclohex',name:'Cyclohexylmethyl',abbr:'Cha',cat:'cyclic',formula:'–CH₂–cHex',mw:111,hydrophob:'very high',charge:'neutral',pka:null,natural:false,color:'purple',usage:'Cyclohexylalanine. Saturated ring analog of Phe. Protease-resistant, used in peptide drug optimization.',draw:(s,x,y)=>{ln(s,x,y,x,y-38);tx(s,x,y-44,'CH₂');cHexyl(s,x,y-75)}},
+  {id:'bicyclo',name:'BCN',abbr:'BCN',cat:'cyclic',formula:'–BCN',mw:123,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'purple',usage:'Bicyclononyne for inverse electron demand Diels-Alder (IEDDA) with tetrazines. Fastest bioorthogonal reaction.',draw:(s,x,y)=>{ln(s,x,y,x,y-55);bcn(s,x,y-90)}},
+  {id:'phenyl',name:'Phenyl (Phe)',abbr:'Phe',cat:'aromatic',formula:'–CH₂–C₆H₅',mw:91,hydrophob:'high',charge:'neutral',pka:null,natural:true,color:'teal',usage:'Natural amino acid. Reference for SAR studies of aromatic side chains and π-stacking interactions.',draw:(s,x,y)=>{ring6(s,x,y-85,27);ln(s,x,y,x,y-58);tx(s,x,y-63,'CH₂')}},
+  {id:'naphthyl',name:'Naphthyl',abbr:'NapAla',cat:'aromatic',formula:'–CH₂–C₁₀H₇',mw:141,hydrophob:'very high',charge:'neutral',pka:null,natural:false,color:'teal',usage:'Bulky bicyclic aromatic. Used in stapled peptides and deep hydrophobic pocket targeting.',draw:(s,x,y)=>{dblRing(s,x,y-90);ln(s,x,y,x,y-60);tx(s,x,y-65,'CH₂')}},
+  {id:'biphenylalanine',name:'Biphenylalanine',abbr:'BipAla',cat:'aromatic',formula:'–CH₂–BiPh',mw:167,hydrophob:'very high',charge:'neutral',pka:null,natural:false,color:'teal',usage:'Extended aromatic system for binding deep protein grooves. Used in PPI inhibitor design.',draw:(s,x,y)=>{ring6(s,x,y-75,22);ring6(s,x,y-118,22);ln(s,x,y,x,y-50);tx(s,x,y-55,'CH₂');ln(s,x,y-97,x,y-96)}},
+  {id:'indole',name:'Methylindole',abbr:'MeTrp',cat:'aromatic',formula:'–CH₂–IndCH₃',mw:144,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'teal',usage:'N-methyl tryptophan analog. Modulates fluorescence properties and protease resistance vs natural Trp.',draw:(s,x,y)=>{indole(s,x,y-85);ln(s,x,y,x,y-57);tx(s,x,y-63,'CH₂')}},
+  {id:'azide',name:'Azidophenyl',abbr:'pAzF',cat:'reactive',formula:'–C₆H₄–N₃',mw:118,hydrophob:'moderate',charge:'neutral',pka:null,natural:false,color:'blue',usage:'Site-specific bioorthogonal handle for SPAAC click chemistry. Key residue for ADC synthesis and protein PEGylation.',draw:(s,x,y)=>{ring6(s,x,y-82,27);ln(s,x,y,x,y-55);tx2(s,x,y-110,'N₃',true,'#185FA5')}},
+  {id:'alkyne',name:'Propargyl',abbr:'Prg',cat:'reactive',formula:'–CH₂–C≡CH',mw:53,hydrophob:'moderate',charge:'neutral',pka:null,natural:false,color:'blue',usage:'Terminal alkyne for CuAAC click chemistry. Widely used for fluorescent labeling, PEGylation, and surface conjugation.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-42,lb:'CH₂'},{dx:0,dy:-44,lb:'C≡CH',b:true}])},
+  {id:'tetrazine',name:'Methyltetrazine',abbr:'MeTz',cat:'reactive',formula:'–C₆H₄–Tz',mw:160,hydrophob:'moderate',charge:'neutral',pka:null,natural:false,color:'blue',usage:'Tetrazine for IEDDA ligation with BCN/TCO. Ultra-fast kinetics (k₂ > 10³ M⁻¹s⁻¹). Used in live-cell imaging.',draw:(s,x,y)=>{ring6(s,x,y-82,27);ln(s,x,y,x,y-55);tx2(s,x,y-109,'Tz',true,'#185FA5')}},
+  {id:'ketone',name:'Acetylphenyl',abbr:'pAcF',cat:'reactive',formula:'–C₆H₄–COCH₃',mw:133,hydrophob:'moderate',charge:'neutral',pka:null,natural:false,color:'blue',usage:'Ketone handle for oxime/hydrazone ligation. Used in pH-cleavable ADC linkers and bioconjugate chemistry.',draw:(s,x,y)=>{ring6(s,x,y-82,27);ln(s,x,y,x,y-55);tx2(s,x,y-112,'COCH₃',true,'#185FA5')}},
+  {id:'diazirine',name:'Diazirine',abbr:'DiazAla',cat:'reactive',formula:'–(CH₂)₂–Dz',mw:82,hydrophob:'moderate',charge:'neutral',pka:null,natural:false,color:'blue',usage:'Photoactivatable crosslinker. UV-triggered carbene forms covalent bonds with nearby residues. Used in photo-crosslinking proteomics.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-40,lb:'CH₂'},{dx:0,dy:-42,lb:'Diazirine',b:true}])},
+  {id:'fluoro',name:'Trifluoromethyl',abbr:'tfmAla',cat:'fluoro',formula:'–CF₃',mw:84,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'amber',usage:'Blocks oxidative metabolism. Increases lipophilicity and metabolic stability. Common in CNS and oral drug design.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-52,lb:'CF₃',b:true,col:'#854F0B'}])},
+  {id:'difluorophe',name:'Difluorophenyl',abbr:'dfPhe',cat:'fluoro',formula:'–C₆H₃F₂',mw:129,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'amber',usage:'Enhanced metabolic stability vs Phe. Improved BBB penetration. Used in CNS peptide therapeutics.',draw:(s,x,y)=>{ring6(s,x,y-82,27);ln(s,x,y,x,y-55);tx2(s,x-30,y-98,'F',false,'#854F0B');tx2(s,x+30,y-98,'F',false,'#854F0B')}},
+  {id:'perfluoro',name:'Pentafluorophenyl',abbr:'F5Phe',cat:'fluoro',formula:'–C₆F₅',mw:167,hydrophob:'very high',charge:'neutral',pka:null,natural:false,color:'amber',usage:'All-fluorine ring. Ultra-stable to metabolic oxidation. Also an electrophilic handle for SNAr bioconjugation reactions.',draw:(s,x,y)=>{ring6(s,x,y-82,27);ln(s,x,y,x,y-55);tx2(s,x-30,y-98,'F',false,'#854F0B');tx2(s,x+30,y-98,'F',false,'#854F0B');tx2(s,x,y-112,'F',false,'#854F0B')}},
+  {id:'trifluoroeth',name:'Trifluoroethyl',abbr:'tfeGly',cat:'fluoro',formula:'–CH₂CF₃',mw:98,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'amber',usage:'Fluorinated ethyl side chain. Strong –I effect modulates pKa of adjacent groups. Used in peptidomimetics.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-42,lb:'CH₂'},{dx:0,dy:-44,lb:'CF₃',b:true,col:'#854F0B'}])},
+  {id:'phos',name:'Phosphonomethyl',abbr:'pmGly',cat:'polar',formula:'–CH₂–PO₃H₂',mw:125,hydrophob:'low',charge:'neg',pka:2.1,natural:false,color:'coral',usage:'Phosphonate bioisostere of phosphoserine. Resistant to phosphatases. Used in kinase substrate analogs.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-42,lb:'CH₂'},{dx:0,dy:-44,lb:'PO₃H₂',b:true,col:'#993C1D'}])},
+  {id:'sulfo',name:'Sulfomethyl',abbr:'smAla',cat:'polar',formula:'–CH₂SO₃H',mw:111,hydrophob:'low',charge:'neg',pka:1.0,natural:false,color:'coral',usage:'Permanent –1 charge at physiological pH. Models electrostatic interactions. Sulfate mimic in heparin-binding studies.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-42,lb:'CH₂'},{dx:0,dy:-44,lb:'SO₃H',b:true,col:'#993C1D'}])},
+  {id:'boronicacid',name:'Boronoalanine',abbr:'Bal',cat:'polar',formula:'–CH₂B(OH)₂',mw:88,hydrophob:'low',charge:'neutral',pka:8.9,natural:false,color:'coral',usage:'Boronic acid side chain. Forms reversible covalent bonds with diols and catechols. Used in proteasome inhibitors (cf. Bortezomib).',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-42,lb:'CH₂'},{dx:0,dy:-44,lb:'B(OH)₂',b:true,col:'#993C1D'}])},
+  {id:'hydroxamate',name:'Hydroxamate',abbr:'HxAla',cat:'polar',formula:'–(CH₂)₂–NHOH',mw:90,hydrophob:'low',charge:'neutral',pka:9.0,natural:false,color:'coral',usage:'Metal chelating side chain. Hydroxamate binds Zn²⁺ in HDAC and MMP active sites. Pharmacophore in vorinostat.',draw:(s,x,y)=>dc(s,x,y,[{dx:16,dy:-36},{dx:0,dy:-40,lb:'CH₂'},{dx:-16,dy:-36,lb:'NHOH',b:true,col:'#993C1D'}])},
+  {id:'guanidino',name:'Homoarginine',abbr:'hArg',cat:'charged',formula:'–(CH₂)₃–Guan',mw:114,hydrophob:'low',charge:'pos',pka:12.5,natural:false,color:'pink',usage:'Extended arginine with one extra CH₂. Enhanced cell penetration. Used in CPP (cell-penetrating peptide) design.',draw:(s,x,y)=>dc(s,x,y,[{dx:14,dy:-32},{dx:0,dy:-38,lb:'CH₂'},{dx:-14,dy:-34},{dx:0,dy:-38,lb:'Guan.',b:true,col:'#993556'}])},
+  {id:'ornithine',name:'Ornithine',abbr:'Orn',cat:'charged',formula:'–(CH₂)₃–NH₂',mw:88,hydrophob:'low',charge:'pos',pka:10.5,natural:false,color:'pink',usage:'Shorter lysine analog. Used in cyclic peptide macrolactamization and as template for side-chain bridging.',draw:(s,x,y)=>dc(s,x,y,[{dx:14,dy:-34},{dx:0,dy:-38,lb:'CH₂'},{dx:-14,dy:-34,lb:'NH₂',b:true,col:'#993556'}])},
+  {id:'carboxymethyl',name:'Carboxymethyl',abbr:'cmGly',cat:'charged',formula:'–CH₂–COOH',mw:74,hydrophob:'low',charge:'neg',pka:3.8,natural:false,color:'pink',usage:'Extra carboxylate for metal binding or ionic interactions. Used in metal chelation peptides and artificial metalloenzymes.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-42,lb:'CH₂'},{dx:0,dy:-44,lb:'COOH',b:true,col:'#993556'}])},
+  {id:'imidazole',name:'NMe-Histidine',abbr:'NMeHis',cat:'aromatic',formula:'–CH₂–Im(CH₃)',mw:124,hydrophob:'low',charge:'neutral',pka:6.8,natural:false,color:'teal',usage:'N-methyl histidine. Tunes pKa of the imidazole ring for tailored catalytic activity in artificial enzymes.',draw:(s,x,y)=>{imid(s,x,y-82);ln(s,x,y,x,y-54);tx(s,x,y-59,'CH₂')}},
+  {id:'selenocys',name:'Selenocysteine',abbr:'Sec',cat:'special',formula:'–CH₂–SeH',mw:121,hydrophob:'moderate',charge:'neutral',pka:5.4,natural:true,color:'green',usage:'21st naturally encoded amino acid. Lower pKa than Cys (5.4 vs 8.3). Used in oxidoreductase engineering and redox probes.',draw:(s,x,y)=>dc(s,x,y,[{dx:0,dy:-44,lb:'CH₂'},{dx:0,dy:-44,lb:'SeH',b:true,col:'#27500A'}])},
+  {id:'pyrrolysine',name:'Pyrrolysine',abbr:'Pyl',cat:'special',formula:'–Lys–pyrroline',mw:237,hydrophob:'moderate',charge:'neutral',pka:null,natural:true,color:'green',usage:'22nd naturally encoded amino acid (in archaeal methanogens). Genetic code expansion scaffold — engineered PylRS/tRNAPyl pairs.',draw:(s,x,y)=>dc(s,x,y,[{dx:14,dy:-30},{dx:-14,dy:-30},{dx:14,dy:-30,lb:'Pyl chain',b:true,col:'#27500A'}])},
+  {id:'norharman',name:'β-Carboline',abbr:'bCar',cat:'special',formula:'–CH₂–βCar',mw:166,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'green',usage:'Tricyclic aromatic system with intrinsic fluorescence. Used as spectroscopic reporter in membrane peptide studies.',draw:(s,x,y)=>{triRing(s,x,y-90);ln(s,x,y,x,y-60);tx(s,x,y-65,'CH₂')}},
+  {id:'staple_alkene',name:'Staple alkene (S5)',abbr:'S5',cat:'special',formula:'–(CH₂)₃–CH=CH₂',mw:83,hydrophob:'high',charge:'neutral',pka:null,natural:false,color:'green',usage:'Olefin metathesis handle for peptide stapling (α-helix stabilization). Increases protease resistance and cell permeability 10–100×.',draw:(s,x,y)=>dc(s,x,y,[{dx:14,dy:-30},{dx:-14,dy:-32},{dx:14,dy:-30,lb:'CH=CH₂',b:true,col:'#27500A'}])},
+];
+
+const cats = ['alkyl','aromatic','reactive','fluoro','polar','charged','cyclic','special'];
+const catColors = {alkyl:'gray',aromatic:'teal',reactive:'blue',fluoro:'amber',polar:'coral',charged:'pink',cyclic:'purple',special:'green'};
+const badgeCls = {gray:'bg-gray',teal:'bg-teal',blue:'bg-blue',amber:'bg-amber',coral:'bg-coral',pink:'bg-pink',purple:'bg-purple',green:'bg-green'};
+
+let curBB='alpha', curCat='all', curSC=AA[0], seq=[];
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>{x.classList.remove('active');x.style.display='none'});
+  event.target.classList.add('active');
+  const p=document.getElementById('panel-'+t);
+  p.classList.add('active');
+  p.style.display=t==='builder'?'flex':'flex';
+  if(t==='builder') renderLibTiles();
+}
+
+function svgEl(tag,attrs,parent){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  if(parent) parent.appendChild(el);
+  return el;
+}
+function ln(s,x1,y1,x2,y2,w,c){svgEl('line',{x1,y1,x2,y2,stroke:c||'var(--color-text-secondary)','stroke-width':w||1.5},s)}
+function tx(s,x,y,t,bold,c){const el=svgEl('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':bold?'12':'11','font-weight':bold?'500':'400',fill:c||'var(--color-text-primary)'},s);el.textContent=t;return el}
+function tx2(s,x,y,t,bold,c){return tx(s,x,y,t,bold,c)}
+function dc(s,cx,cy,steps){let x=cx,y=cy;steps.forEach(st=>{const nx=x+st.dx,ny=y+st.dy;ln(s,x,y,nx,ny);if(st.lb)tx(s,nx,ny+(st.dy<0?-8:8),st.lb,st.b,st.col);x=nx;y=ny})}
+function ring6(s,cx,cy,r){const pts=[];for(let i=0;i<6;i++){const a=(i*60-90)*Math.PI/180;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}for(let i=0;i<6;i++){const[x1,y1]=pts[i],[x2,y2]=pts[(i+1)%6];ln(s,x1,y1,x2,y2);if(i%2===0)ln(s,(x1+x2)/2+.12*(y1-y2),(y1+y2)/2+.12*(x2-x1),(x1+x2)/2-.12*(y1-y2),(y1+y2)/2-.12*(x2-x1),.8,'var(--color-text-tertiary)')}}
+function dblRing(s,cx,cy){ring6(s,cx-20,cy,20);ring6(s,cx+20,cy,20);ln(s,cx-20,cy-20,cx+20,cy-20);ln(s,cx-20,cy+20,cx+20,cy+20)}
+function cPropyl(s,cx,cy){ln(s,cx-12,cy+8,cx+12,cy+8);ln(s,cx-12,cy+8,cx,cy-10);ln(s,cx+12,cy+8,cx,cy-10)}
+function cHexyl(s,cx,cy){const r=22;const pts=[];for(let i=0;i<6;i++){const a=(i*60-90)*Math.PI/180;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}for(let i=0;i<6;i++){const[x1,y1]=pts[i],[x2,y2]=pts[(i+1)%6];ln(s,x1,y1,x2,y2)}}
+function bcn(s,cx,cy){const pts=[[cx-22,cy],[cx-16,cy-24],[cx,cy-34],[cx+16,cy-24],[cx+22,cy],[cx+16,cy+24],[cx,cy+10],[cx-16,cy+24]];for(let i=0;i<pts.length;i++){const[x1,y1]=pts[i],[x2,y2]=pts[(i+1)%pts.length];ln(s,x1,y1,x2,y2)}ln(s,pts[0][0],pts[0][1],pts[4][0],pts[4][1])}
+function indole(s,cx,cy){ring6(s,cx-14,cy,22);const pts=[[cx+8,cy-22],[cx+28,cy-14],[cx+32,cy+6],[cx+18,cy+20],[cx+4,cy+18]];for(let i=0;i<pts.length-1;i++)ln(s,pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);ln(s,pts[4][0],pts[4][1],cx+8,cy+8);ln(s,cx+8,cy-22,cx+8,cy+8,1,'var(--color-text-tertiary)')}
+function imid(s,cx,cy){const pts=[[cx-18,cy-20],[cx,cy-33],[cx+22,cy-20],[cx+18,cy+6],[cx-18,cy+6]];for(let i=0;i<5;i++){const[x1,y1]=pts[i],[x2,y2]=pts[(i+1)%5];ln(s,x1,y1,x2,y2)}tx(s,cx+22,cy-20,'N',false,'#3B8BD4');tx(s,cx-18,cy-18,'N',false,'#3B8BD4');tx(s,cx+22,cy+4,'CH₃',false,'')}
+function triRing(s,cx,cy){ring6(s,cx-20,cy,20);ring6(s,cx+18,cy,20);const pts=[[cx-2,cy-20],[cx+14,cy-36],[cx+26,cy-20]];for(let i=0;i<2;i++)ln(s,pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);tx(s,cx+14,cy-40,'N',false,'#378ADD')}
+
+function atomNode(s,x,y,lbl,fill,tc){
+  svgEl('circle',{cx:x,cy:y,r:13,fill:fill||'var(--color-background-secondary)',stroke:'var(--color-text-secondary)','stroke-width':1.5},s);
+  const el=svgEl('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':'11','font-weight':'500',fill:tc||'var(--color-text-primary)'},s);
+  el.textContent=lbl;
+}
+
+function drawMol(){
+  const s=document.getElementById('mol-svg');s.innerHTML='';
+  const cx=225,cy=165;
+  const col=catColors[curSC.cat]||'gray';
+  const fills={gray:['#D3D1C7','#444441'],teal:['#9FE1CB','#085041'],blue:['#B5D4F4','#0C447C'],amber:['#FAC775','#633806'],coral:['#F5C4B3','#712B13'],pink:['#F4C0D1','#72243E'],purple:['#CECBF6','#3C3489'],green:['#C0DD97','#27500A']};
+  const[af,at]=fills[col]||fills.gray;
+  for(let i=0;i<5;i++)for(let j=0;j<3;j++){const dot=svgEl('circle',{cx:70+i*80,cy:40+j*75,r:1.5,fill:'var(--color-border-tertiary)'},s);}
+  ln(s,cx+18,cy,cx+62,cy);atomNode(s,cx+76,cy,'C','var(--color-background-secondary)');
+  ln(s,cx+89,cy,cx+108,cy-18,1.5);atomNode(s,cx+120,cy-24,'O','#FCEBEB','#A32D2D');
+  ln(s,cx+89,cy,cx+108,cy+14,1.5);atomNode(s,cx+120,cy+20,'OH','#FCEBEB','#A32D2D');
+  ln(s,cx+80,cy-4,cx+98,cy-18,.7,'var(--color-text-tertiary)');
+  atomNode(s,cx,cy,'Cα',af,at);
+  ln(s,cx-18,cy,cx-65,cy);atomNode(s,cx-79,cy,'NH₂','#EAF3DE','#27500A');
+  if(curBB==='d'){ln(s,cx,cy+17,cx,cy+46);tx(s,cx,cy+56,'H (D-config)',false,'var(--color-text-tertiary)')}
+  else if(curBB==='beta'){ln(s,cx,cy+17,cx,cy+50);atomNode(s,cx,cy+63,'Cβ',af,at);ln(s,cx,cy+76,cx,cy+105);tx(s,cx,cy+114,'NH₂',false,'#27500A')}
+  else if(curBB==='n-me'){ln(s,cx-79,cy,cx-110,cy);tx(s,cx-122,cy,'CH₃',false,'var(--color-text-secondary)')}
+  else{ln(s,cx,cy+17,cx,cy+44);tx(s,cx,cy+53,'H',false,'var(--color-text-tertiary)')}
+  ln(s,cx,cy-17,cx,cy-46);
+  if(curSC.draw)curSC.draw(s,cx,cy-46);
+  const bbMap={alpha:'α-L amino acid',beta:'β-amino acid',d:'α-D (mirror)','n-me':'N-Me α-amino'};
+  tx(s,350,248,bbMap[curBB]||'',false,'var(--color-text-tertiary)');
+}
+
+function renderProps(){
+  const sc=curSC;
+  const hw={high:'bg-blue','very high':'bg-green',low:'bg-coral',moderate:'bg-gray'}[sc.hydrophob]||'bg-gray';
+  const cw={neutral:'bg-gray',neg:'bg-red',pos:'bg-blue'}[sc.charge]||'bg-gray';
+  document.getElementById('props-list').innerHTML=`
+    <div class="prop-row"><span class="prop-label">Formula</span><span style="font-size:12px;font-weight:500">${sc.formula}</span></div>
+    <div class="prop-row"><span class="prop-label">Side chain MW</span><span style="font-size:12px;font-weight:500">${sc.mw} Da</span></div>
+    <div class="prop-row"><span class="prop-label">Hydrophobicity</span><span class="badge ${hw}">${sc.hydrophob}</span></div>
+    <div class="prop-row"><span class="prop-label">Charge (pH 7)</span><span class="badge ${cw}">${sc.charge}</span></div>
+    ${sc.pka?`<div class="prop-row"><span class="prop-label">Side chain pKa</span><span style="font-size:12px;font-weight:500">${sc.pka}</span></div>`:''}
+  `;
+}
+
+function renderInfo(){
+  const sc=curSC;
+  const bbLabel={alpha:'α-L',beta:'β-amino',d:'α-D','n-me':'N-Me'}[curBB]||'α-L';
+  document.getElementById('d-name').textContent=sc.name;
+  document.getElementById('d-abbr').textContent=sc.abbr+' · '+bbLabel;
+  document.getElementById('d-badge').className='badge '+(sc.natural?'bg-green':'bg-gray');
+  document.getElementById('d-badge').textContent=sc.natural?'Natural':'Non-natural';
+  document.getElementById('d-info').innerHTML=`<div class="stat"><div class="stat-num">${sc.mw}</div><div class="stat-lbl">SC mass (Da)</div></div><div class="stat"><div class="stat-num" style="font-size:13px">${sc.hydrophob}</div><div class="stat-lbl">Hydrophobicity</div></div><div class="stat"><div class="stat-num" style="font-size:13px">${sc.charge}</div><div class="stat-lbl">Charge</div></div><div class="stat"><div class="stat-num">${sc.pka||'—'}</div><div class="stat-lbl">pKa</div></div>`;
+  document.getElementById('d-use').innerHTML=`<span style="font-weight:500;color:var(--color-text-primary)">${sc.cat.charAt(0).toUpperCase()+sc.cat.slice(1)} · Research use:</span> ${sc.usage}<br><button class="ask-btn" onclick="sendPrompt('How is ${sc.name} (${sc.abbr}) synthesized and incorporated into peptides?')">Synthesis ↗</button><button class="ask-btn" onclick="sendPrompt('Give me examples of drugs or research tools using ${sc.name} as a non-natural amino acid.')">Examples ↗</button><button class="ask-btn" onclick="addToSeq(AA.find(a=>a.id==='${sc.id}'))">+ Add to sequence</button>`;
+}
+
+function renderCatChips(){
+  const container=document.getElementById('cat-chips');container.innerHTML='';
+  ['all',...cats].forEach(c=>{
+    const ch=document.createElement('div');
+    const col=catColors[c]||'';
+    ch.className=`chip cat-${c}`+(c===curCat?' active':'');
+    ch.textContent=c==='all'?'All':c;
+    ch.onclick=()=>{curCat=c;document.querySelectorAll('#cat-chips .chip').forEach(x=>x.classList.remove('active'));ch.classList.add('active');renderSCChips()};
+    container.appendChild(ch);
+  });
+}
+
+function renderSCChips(){
+  const filtered=curCat==='all'?AA:AA.filter(a=>a.cat===curCat);
+  if(!filtered.find(a=>a.id===curSC.id))curSC=filtered[0];
+  const container=document.getElementById('sc-chips');container.innerHTML='';
+  filtered.forEach(sc=>{
+    const ch=document.createElement('div');
+    ch.className=`chip cat-${sc.cat}`+(sc.id===curSC.id?' active':'');
+    ch.textContent=sc.name;
+    ch.onclick=()=>{curSC=sc;renderSCChips();drawMol();renderProps();renderInfo()};
+    container.appendChild(ch);
+  });
+}
+
+function setBackbone(el,bb){
+  curBB=bb;document.querySelectorAll('.bb-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');drawMol();renderInfo();
+}
+
+function renderLibTiles(){
+  const container=document.getElementById('lib-tiles');container.innerHTML='';
+  cats.forEach(cat=>{
+    const lbl=document.createElement('div');
+    lbl.className='sec-label';lbl.style.marginBottom='4px';lbl.style.marginTop='8px';lbl.textContent=cat;
+    container.appendChild(lbl);
+    const grid=document.createElement('div');grid.className='chip-grid';
+    AA.filter(a=>a.cat===cat).forEach(sc=>{
+      const tile=document.createElement('div');
+      tile.className='res-tile';
+      tile.innerHTML=`<span class="res-abbr">${sc.abbr}</span><span class="res-name">${sc.name}</span>`;
+      tile.onclick=()=>addToSeq(sc);
+      grid.appendChild(tile);
+    });
+    container.appendChild(grid);
+  });
+}
+
+function addToSeq(sc){
+  if(seq.length>=20)return;
+  seq.push(sc);
+  renderSeq();
+  switchTab('builder');
+}
+
+function undoLast(){seq.pop();renderSeq()}
+function clearSeq(){seq=[];renderSeq()}
+
+function renderSeq(){
+  const strip=document.getElementById('seq-strip');
+  document.getElementById('seq-len').textContent=`(${seq.length} residue${seq.length!==1?'s':''})`;
+  if(seq.length===0){strip.innerHTML='<span class="empty-hint">Click residues from the library to add them</span>';document.getElementById('seq-props').innerHTML='';document.getElementById('chain-svg').innerHTML='';document.getElementById('seq-notes').innerHTML='';return}
+  strip.innerHTML='';
+  seq.forEach((sc,i)=>{
+    const t=document.createElement('div');
+    t.className='res-tile';
+    t.innerHTML=`<span style="font-size:10px;color:var(--color-text-tertiary)">${i+1}</span><span class="res-abbr">${sc.abbr}</span><span class="nn-indicator" style="background:${sc.natural?'#EAF3DE':'#E6F1FB'};color:${sc.natural?'#27500A':'#0C447C'}">${sc.natural?'nat':'nnAA'}</span>`;
+    t.title=sc.name;
+    t.onclick=()=>{seq.splice(i,1);renderSeq()};
+    strip.appendChild(t);
+  });
+  calcSeqProps();
+  drawChain();
+  renderSeq_notes();
+}
+
+function calcSeqProps(){
+  const totalMW=seq.reduce((s,a)=>s+a.mw+89,0)-(seq.length-1)*18;
+  const nnCount=seq.filter(a=>!a.natural).length;
+  const hyd=seq.filter(a=>['high','very high'].includes(a.hydrophob)).length;
+  const neg=seq.filter(a=>a.charge==='neg').length;
+  const pos=seq.filter(a=>a.charge==='pos').length;
+  const netChg=pos-neg;
+  document.getElementById('seq-props').innerHTML=`
+    <div class="prop-card"><div class="prop-num">${Math.round(totalMW)}</div><div class="prop-lbl">Est. MW (Da)</div></div>
+    <div class="prop-card"><div class="prop-num">${nnCount}/${seq.length}</div><div class="prop-lbl">Non-natural</div></div>
+    <div class="prop-card"><div class="prop-num">${netChg>0?'+'+netChg:netChg}</div><div class="prop-lbl">Net charge</div></div>
+    <div class="prop-card"><div class="prop-num">${Math.round(hyd/seq.length*100)}%</div><div class="prop-lbl">Hydrophobic</div></div>
+  `;
+}
+
+function drawChain(){
+  const s=document.getElementById('chain-svg');s.innerHTML='';
+  const n=seq.length;if(n===0)return;
+  const W=Math.max(600,n*56+80);
+  s.setAttribute('viewBox',`0 0 ${W} 110`);
+  const y=55,startX=40;
+  seq.forEach((sc,i)=>{
+    const x=startX+i*((W-80)/(Math.max(n-1,1)));
+    if(i<n-1){
+      const nx=startX+(i+1)*((W-80)/(Math.max(n-1,1)));
+      svgEl('line',{x1:x+16,y1:y,x2:nx-16,y2:y,stroke:'var(--color-text-tertiary)','stroke-width':1.5},s);
+    }
+    const col=catColors[sc.cat]||'gray';
+    const bgMap={gray:'#D3D1C7',teal:'#9FE1CB',blue:'#B5D4F4',amber:'#FAC775',coral:'#F5C4B3',pink:'#F4C0D1',purple:'#CECBF6',green:'#C0DD97'};
+    const tcMap={gray:'#444441',teal:'#085041',blue:'#0C447C',amber:'#633806',coral:'#712B13',pink:'#72243E',purple:'#3C3489',green:'#27500A'};
+    svgEl('circle',{cx:x,cy:y,r:15,fill:bgMap[col]||'#D3D1C7',stroke:tcMap[col]||'#888780','stroke-width':1},s);
+    const lbl=svgEl('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':'9','font-weight':'500',fill:tcMap[col]||'#444441'},s);
+    lbl.textContent=sc.abbr.length>5?sc.abbr.slice(0,4):sc.abbr;
+    const num=svgEl('text',{x,y:y+28,'text-anchor':'middle','font-size':'9',fill:'var(--color-text-tertiary)'},s);
+    num.textContent=i+1;
+    if(i===0){const nt=svgEl('text',{x,y:y-26,'text-anchor':'middle','font-size':'8',fill:'var(--color-text-tertiary)'},s);nt.textContent='N'}
+    if(i===n-1){const ct=svgEl('text',{x,y:y-26,'text-anchor':'middle','font-size':'8',fill:'var(--color-text-tertiary)'},s);ct.textContent='C'}
+  });
+}
+
+function renderSeq_notes(){
+  const hasClick=seq.some(a=>['azide','alkyne','tetrazine','bicyclo','diazirine'].includes(a.id));
+  const hasFluoro=seq.some(a=>a.cat==='fluoro');
+  const hasStaple=seq.some(a=>a.id==='staple_alkene');
+  const hasBCN=seq.some(a=>a.id==='bicyclo');
+  const hasTz=seq.some(a=>a.id==='tetrazine');
+  const notes=[];
+  if(hasClick)notes.push('Contains bioorthogonal handle(s) — suitable for site-specific conjugation or labeling.');
+  if(hasFluoro)notes.push('Contains fluorine — expect enhanced metabolic stability and altered lipophilicity.');
+  if(hasStaple)notes.push('Contains S5 olefin — can be cyclized via Grubbs metathesis to form a stapled α-helix.');
+  if(hasBCN&&hasTz)notes.push('BCN + tetrazine pair detected — rapid IEDDA ligation possible within this sequence.');
+  if(seq.length>1)notes.push(`Sequence notation: H-${seq.map(a=>a.abbr).join('-')}-OH`);
+  document.getElementById('seq-notes').innerHTML=notes.map(n=>`<span style="display:block;padding:2px 0">${n}</span>`).join('');
+}
+
+function analyzeSeq(){
+  if(seq.length===0)return;
+  const s=`Analyze this non-natural peptide sequence: H-${seq.map(a=>a.abbr).join('-')}-OH. Discuss expected properties, applications, and how to synthesize it using SPPS.`;
+  sendPrompt(s);
+}
+
+function exportSeq(){
+  if(seq.length===0)return;
+  const txt=`H-${seq.map(a=>a.abbr).join('-')}-OH`;
+  navigator.clipboard&&navigator.clipboard.writeText(txt);
+  sendPrompt(`I have this peptide sequence: ${txt} — what synthesis strategy and protecting groups would you recommend?`);
+}
+
+renderCatChips();renderSCChips();drawMol();renderProps();renderInfo();
+</script>
+</body>
+</html>
